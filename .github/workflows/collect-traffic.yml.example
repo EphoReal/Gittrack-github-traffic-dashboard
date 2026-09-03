@@ -61,7 +61,7 @@ jobs:
 
     env:
       # 👇 改成你使用的公开工具仓库（owner/repo）
-      TOOL_REPO: your-username/github-traffic-dashboard
+      TOOL_REPO: your-username/Gittrack-github-traffic-dashboard
 
     steps:
       # 第 1 步：检出【本私有数据仓库】（含 config/ 与累积的 data/）

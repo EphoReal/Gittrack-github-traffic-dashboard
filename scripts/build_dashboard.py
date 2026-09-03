@@ -39,7 +39,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GitHub Traffic 看板</title>
+<title>Gittrack-GitHub Traffic 看板</title>
 <style>
   :root {
     --bg: #f5f6f8;
@@ -294,8 +294,8 @@ TEMPLATE = r"""<!DOCTYPE html>
   try { var _l = localStorage.getItem(LS_LANG); if (_l === "zh" || _l === "en") LANG = _l; } catch (e) {}
   var I18N = {
     zh: {
-      page_title: "GitHub Traffic 看板",
-      header_title: "GitHub Traffic 看板",
+      page_title: "Gittrack-GitHub Traffic 看板",
+      header_title: "Gittrack · GitHub Traffic 看板",
       btn_live: "实时刷新",
       set_user_label: "GitHub 用户名或主页（如 <code>your-username</code> 或 <code>https://github.com/your-username</code>）",
       set_user_ph: "your-username",
@@ -389,8 +389,8 @@ TEMPLATE = r"""<!DOCTYPE html>
       footer: "数据由 GitHub Actions 每日自动采集 · 重新采集后本文件会被自动更新<br>GitHub 官方只保留最近 14 天，本看板的历史由 <code>data/traffic-history.json</code> 累积保存"
     },
     en: {
-      page_title: "GitHub Traffic Dashboard",
-      header_title: "GitHub Traffic Dashboard",
+      page_title: "Gittrack-GitHub Traffic Dashboard",
+      header_title: "Gittrack · GitHub Traffic Dashboard",
       btn_live: "Refresh",
       set_user_label: 'GitHub username or profile (e.g. <code>your-username</code> or <code>https://github.com/your-username</code>)',
       set_user_ph: "your-username",
