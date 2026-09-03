@@ -1,0 +1,131 @@
+# 采集 GitHub Traffic 的定时任务模板
+#
+# ⚠️ 本文件是【模板】，默认不会运行（扩展名是 .yml.example）。
+#
+# 用法：把它复制到你自己的「私有数据仓库」里，改名成
+#       .github/workflows/collect-traffic.yml
+#       并把下面的 TOOL_REPO 改成你使用的公开工具仓库（owner/repo）。
+#
+# 为什么不在工具仓库里直接跑？
+#   因为 GitHub Actions 每次运行都是全新 checkout，要让历史跨天累积，
+#   就必须把数据提交回仓库；提交回「公开」仓库 = 把你的流量公开。
+#   所以：工具仓库公开分享，数据仓库保持私有。
+#
+# 前置条件：
+#   1. 本仓库是私有数据仓库，里面有 config/repos.json
+#   2. 配置 secret TRAFFIC_TOKEN：具备目标仓库「写权限」的 PAT
+#      - Classic：勾选 repo
+#      - Fine-grained：Permissions → Administration: Read-only，Repository access 选目标仓库
+
+name: Collect GitHub Traffic
+
+on:
+  schedule:
+    # 每天 UTC 02:00（北京时间 10:00）执行。
+    # 说明：GitHub 不保证准点，高峰期可能延迟数十分钟；仓库 60 天无任何提交时会自动停用定时任务。
+    - cron: "0 2 * * *"
+
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: "只采集指定仓库，逗号分隔（如 owner/repo,owner2/repo2）。留空则使用 config/repos.json"
+        required: false
+        default: ""
+      dry_run:
+        description: "只拉取并打印，不写入文件、不提交（用于排查）"
+        type: boolean
+        required: false
+        default: false
+      skip_referrers:
+        description: "跳过 referrers / popular paths 归档"
+        type: boolean
+        required: false
+        default: false
+      mode:
+        description: "采集模式：auto（自动发现当前用户所有仓库）/ explicit（只采集 config/repos.json 里的 repos）"
+        required: false
+        default: "auto"
+
+permissions:
+  contents: write # 提交更新后的数据文件
+
+concurrency:
+  group: collect-traffic
+  cancel-in-progress: false # 采集任务不中断，避免写坏数据文件
+
+jobs:
+  collect:
+    name: Collect traffic data
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      # 👇 改成你使用的公开工具仓库（owner/repo）
+      TOOL_REPO: your-username/github-traffic-dashboard
+
+    steps:
+      # 第 1 步：检出【本私有数据仓库】（含 config/ 与累积的 data/）
+      - name: Checkout data repo
+        uses: actions/checkout@v4
+
+      # 第 2 步：把【公开工具仓库】的脚本检出到 .tool/ 子目录
+      - name: Checkout dashboard tool
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TOOL_REPO }}
+          path: .tool
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          # 脚本只用标准库，无需 pip install；这里固定版本只为保证运行环境一致。
+
+      - name: Collect traffic data
+        env:
+          GITHUB_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
+          REPOS: ${{ github.event.inputs.repos }}
+          RUN_DRY: ${{ github.event.inputs.dry_run }}
+          SKIP_REF: ${{ github.event.inputs.skip_referrers }}
+          MODE: ${{ github.event.inputs.mode }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [ -n "${REPOS:-}" ]; then
+            args+=(--repos "$REPOS")
+          fi
+          if [ -n "${MODE:-}" ]; then
+            args+=(--mode "$MODE")
+          fi
+          if [ "${RUN_DRY:-}" = "true" ]; then
+            args+=(--dry-run)
+          fi
+          if [ "${SKIP_REF:-}" = "true" ]; then
+            args+=(--no-referrers --no-paths)
+          fi
+          python .tool/scripts/collect_traffic.py \
+            --config config/repos.json \
+            --data-dir data \
+            "${args[@]}"
+
+      - name: Build dashboard (with real data)
+        # 注意：这里【不加 --empty】，所以生成的是含你真实流量的个人看板。
+        # 只有私有的数据仓库才能这么做；公开的工具仓库必须始终用 --empty。
+        run: |
+          python .tool/scripts/build_dashboard.py \
+            --data-dir data \
+            --out dashboard.html
+
+      - name: Commit and push if data changed
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain -- data dashboard.html)" ]; then
+            echo "::notice::Traffic 数据无变化，跳过提交。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data dashboard.html
+          git commit -m "chore(traffic): update data $(date -u +'%Y-%m-%d')"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "::notice::Traffic 数据已提交。"

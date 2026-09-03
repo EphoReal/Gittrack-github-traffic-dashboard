@@ -1,0 +1,26 @@
+{
+  "$comment": "仓库清单配置。mode=auto 时自动发现当前用户的所有仓库，repos 里的条目作为额外补充。",
+  "mode": "auto",
+
+  "auto": {
+    "$comment": "自动发现规则：调用 GET /user/repos 列出仓库后按下面条件过滤。",
+    "affiliation": "owner",
+    "sort": "pushed",
+    "include_forks": false,
+    "include_archived": false,
+    "include_private": true,
+    "include_disabled": false,
+    "max_repos": 100,
+    "include_patterns": [],
+    "exclude_patterns": []
+  },
+
+  "repos": [
+    {
+      "$comment": "mode=auto 时这一项不是必需的，保留只是为了说明格式；也可用来补充采集别人授权给你的仓库。请把 owner/name 改成你自己的。",
+      "owner": "your-username",
+      "name": "your-repo",
+      "enabled": true
+    }
+  ]
+}
