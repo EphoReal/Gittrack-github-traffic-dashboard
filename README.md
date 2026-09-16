@@ -101,13 +101,6 @@ Note: live-refreshed data only exists in memory and **is not written back to fil
 
 Click `EN` / `中文` in the upper right corner to switch languages; preference is stored in `localStorage`.
 
-###  Privacy
-
-The tool repo **contains no real data** and is safe to make public: `traffic-dashboard.html` generated with `--empty` opens as blank;
-`.gitignore` blocks `data/traffic-history.json` and `*.csv`; PATs are only stored in GitHub Secrets or browser localStorage.
-
-**Iron rule**: Public repos generating dashboards **must use `--empty`**; accumulated history **goes only in private repos**.
-
 ###  License
 
 ```
@@ -214,12 +207,6 @@ GitHub 网页上的 Traffic 只保留最近 **14 天**。Gittrack 帮你把这�
 
 点右上角 `EN` / `中文` 切换，偏好存 `localStorage`。
 
-###  隐私
-
-工具仓库**不含任何真实数据**，可放心公开：`--empty` 生成的 `traffic-dashboard.html` 打开即空白；
-`.gitignore` 已拦截 `data/traffic-history.json`、`*.csv`；PAT 只存 GitHub Secrets 或浏览器 localStorage。
-
-**铁律**：公开仓库生成看板**必须带 `--empty`**；累积历史**只放私有仓库**。
 
 ###  License
 
