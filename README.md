@@ -220,4 +220,4 @@ Copyright (c) 2026 fthuu
 ###  作者
 
 - Xiaohongshu / Rednote：@Epho
-- GitHub：https://github.com/fthuu
+- GitHub：[https://github.com/EphoReal](https://github.com/EphoReal)
